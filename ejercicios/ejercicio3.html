@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../estilos/stilo.css">
+    <title>Comparación: Euler vs Heun vs RK4</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+</head>
+<body>
+    <div class="container">
+        <h1>Comparación: Euler vs Heun vs Runge-Kutta 4to</h1>
+        <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-family: Arial, sans-serif;">
+    <h2 style="color: #2c3e50; border-bottom: 2px solid #eaeaea; padding-bottom: 10px;">Modelado del Movimiento de un Paracaidista</h2>
+    <p style="color: #34495e; line-height: 1.6;">La velocidad de un paracaidista en caída libre puede modelarse mediante la <strong>segunda ley de Newton</strong>, considerando la gravedad y la resistencia del aire. La tasa de cambio de la velocidad (<em>dv/dt</em>) depende de la fuerza gravitacional y de una fuerza de arrastre proporcional al cuadrado de la velocidad. Matemáticamente, esto se expresa como:</p>
+    <p style="text-align: center; margin: 15px 0; font-size: 1.1em;">
+        <em>m dv/dt = mg - kv<sup>2</sup></em>
+    </p>
+    <p style="color: #34495e; line-height: 1.6;">
+    donde:
+    <ul style="color: #34495e;">
+        <li><em>m</em>: Masa del paracaidista (kg)</li>
+        <li><em>g</em>: Aceleración gravitacional (9.81 m/s²)</li>
+        <li><em>k</em>: Coeficiente de arrastre (depende del área y forma del paracaídas)</li>
+        <li><em>v</em>: Velocidad instantánea (m/s)</li>
+    </ul>
+    Este modelo predice que la velocidad aumentará hasta alcanzar una <strong>velocidad terminal</strong> donde las fuerzas se equilibran (<em>mg = kv<sup>2</sup></em>). Resolver esta ecuación numéricamente (con métodos como Euler, Heun o RK4) permite simular la caída para diseñar paracaídas más seguros o entrenar saltadores.
+    </p>
+    <div style="background-color: #e8f4f8; padding: 10px; border-left: 4px solid #3498db; margin-top: 15px;">
+        <p style="color: #2c3e50; margin: 0; font-style: italic;">
+        <strong>Relación con métodos numéricos:</strong> Al igual que en el modelo logístico <em>dP/dt = rP(1-P/K)</em>, esta ecuación es no lineal por el término <em>v<sup>2</sup></em>, lo que hace esencial el uso de métodos numéricos para su solución.
+        </p>
+    </div>
+</div>
+
+        <center><img src="../imagenes/movimiento.png" alt=""></center>
+
+<div class="method-card heun">
+    <div class="method-btn">
+        <h2>Ejercicio de Movimiento de un Paracaidista</h2>
+        <p>
+            Un paracaidista salta desde un helicóptero a gran altitud. Durante la caída, su velocidad está influenciada por la fuerza de gravedad y la resistencia del aire. 
+            La ecuación diferencial que modela esta situación es:
+            <span class="math">dv/dt = g - (k/m) v</span>,
+            donde <span class="math">v(t)</span> es la velocidad del paracaidista en el tiempo <span class="math">t</span>, 
+            <span class="math">g = 9.8 m/s²</span> es la aceleración de la gravedad, 
+            <span class="math">k</span> es el coeficiente de resistencia del aire, 
+            y <span class="math">m</span> es la masa del paracaidista.
+            <br><br>
+            Modela esta situación usando métodos numéricos para estimar la velocidad del paracaidista después de 10 segundos. 
+        </p>
+        <p><strong>Condiciones iniciales:</strong> <span class="math">v(0) = 0 m/s</span>, 
+        <span class="math">m = 80 kg</span>, 
+        <span class="math">k = 15 kg/s</span></p>
+    </div>
+</div>
+
+
+
+        <div class="form-group">
+            <label for="equation">Ecuación diferencial (dy/dt):</label>
+            <input type="text" id="equation" value="(80*9.8-15*y*y)/80">
+            <small>Usa 'y' para la variable dependiente y 't' para la independiente.</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="t0">Tiempo inicial (t0):</label>
+            <input type="number" id="t0" value="0" step="0.1">
+        </div>
+        
+        <div class="form-group">
+            <label for="y0">Valor inicial (y0):</label>
+            <input type="number" id="y0" value="0" step="0.1">
+        </div>
+        
+        <div class="form-group">
+            <label for="h">Paso (h):</label>
+            <input type="number" id="h" value="0.5" step="0.01" min="0.001">
+        </div>
+        
+        <div class="form-group">
+            <label for="steps">Número de pasos:</label>
+            <input type="number" id="steps" value="20" min="10">
+        </div>
+        
+        <button onclick="solve()">Comparar Métodos</button>
+        
+        <div class="results-container">
+            <div class="result-box">
+                <h3>Método de Euler</h3>
+                <p id="finalValueEuler"></p>
+                <div id="tableEuler"></div>
+            </div>
+            <div class="result-box">
+                <h3>Método de Heun</h3>
+                <p id="finalValueHeun"></p>
+                <div id="tableHeun"></div>
+            </div>
+            <div class="result-box">
+                <h3>Runge-Kutta 4to Orden</h3>
+                <p id="finalValueRK4"></p>
+                <div id="tableRK4"></div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-box">
+                <canvas id="chartEuler"></canvas>
+            </div>
+            <div class="chart-box">
+                <canvas id="chartHeun"></canvas>
+            </div>
+            <div class="chart-box">
+                <canvas id="chartRK4"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-box" style="margin-top: 20px;">
+            <canvas id="chartComparison"></canvas>
+        </div>
+
+<div id="conclusion" class="conclusion" style="display: none;">
+    <h3>Conclusión Comparativa</h3>
+    <p>
+        Para el problema del movimiento de un paracaidista tras 10 segundos, la velocidad estimada fue:
+        <ul>
+            <li>Euler: 7.229569 m/s</li>
+            <li>Heun: 7.229517 m/s</li>
+            <li>Runge-Kutta 4º orden: 7.229569 m/s</li>
+        </ul>
+    </p>
+    <p>
+        Comparando con la solución exacta (<span class="math">7.229569 m/s</span>), todos los métodos ofrecieron resultados muy cercanos. 
+        El método de Heun presentó una leve diferencia, mientras que Euler y Runge-Kutta coincidieron exactamente con la solución analítica en este caso. 
+        Esto demuestra que, aunque métodos como Runge-Kutta son más complejos, en algunos casos simples métodos como Euler también pueden ofrecer alta precisión si el paso y el modelo están bien elegidos.
+    </p>
+</div>
+<center><a href="../index.html" class="btn-simple">← Volver</a></center>
+
+    <script>
+        let chartEuler = null;
+        let chartHeun = null;
+        let chartRK4 = null;
+        let chartComparison = null;
+
+        function solve() {
+            // Obtener valores de los inputs
+            const equation = document.getElementById('equation').value;
+            const t0 = parseFloat(document.getElementById('t0').value);
+            const y0 = parseFloat(document.getElementById('y0').value);
+            const h = parseFloat(document.getElementById('h').value);
+            const steps = parseInt(document.getElementById('steps').value);
+            
+            // Crear función dinámica
+            const f = new Function('t', 'y', 'return ' + equation + ';');
+            
+            // Resolver con los tres métodos
+            const { tValues: tValuesEuler, yValues: yValuesEuler } = eulerMethod(f, t0, y0, h, steps);
+            const { tValues: tValuesHeun, yValues: yValuesHeun } = heunMethod(f, t0, y0, h, steps);
+            const { tValues: tValuesRK4, yValues: yValuesRK4 } = rungeKutta4(f, t0, y0, h, steps);
+            
+            // Mostrar resultados finales
+            document.getElementById('finalValueEuler').innerHTML = `y(${tValuesEuler[tValuesEuler.length-1].toFixed(2)}) = ${yValuesEuler[yValuesEuler.length-1].toFixed(6)}`;
+            document.getElementById('finalValueHeun').innerHTML = `y(${tValuesHeun[tValuesHeun.length-1].toFixed(2)}) = ${yValuesHeun[yValuesHeun.length-1].toFixed(6)}`;
+            document.getElementById('finalValueRK4').innerHTML = `y(${tValuesRK4[tValuesRK4.length-1].toFixed(2)}) = ${yValuesRK4[yValuesRK4.length-1].toFixed(6)}`;
+            
+            // Mostrar tablas
+            showTable('tableEuler', tValuesEuler, yValuesEuler, 'Euler');
+            showTable('tableHeun', tValuesHeun, yValuesHeun, 'Heun');
+            showTable('tableRK4', tValuesRK4, yValuesRK4, 'RK4');
+            
+            // Dibujar gráficos individuales
+            drawChart('chartEuler', tValuesEuler, yValuesEuler, 'Método de Euler', '#e74c3c');
+            drawChart('chartHeun', tValuesHeun, yValuesHeun, 'Método de Heun', '#3498db');
+            drawChart('chartRK4', tValuesRK4, yValuesRK4, 'Runge-Kutta 4to Orden', '#2ecc71');
+            
+            // Dibujar gráfico comparativo
+            drawComparisonChart(tValuesEuler, yValuesEuler, yValuesHeun, yValuesRK4);
+            
+            // Mostrar conclusiones
+            document.getElementById('conclusion').style.display = 'block';
+        }
+        
+        function eulerMethod(f, t0, y0, h, steps) {
+            const tValues = [t0];
+            const yValues = [y0];
+            
+            for (let i = 0; i < steps; i++) {
+                const t = tValues[i];
+                const y = yValues[i];
+                const yNext = y + h * f(t, y);
+                
+                tValues.push(t + h);
+                yValues.push(yNext);
+            }
+            
+            return { tValues, yValues };
+        }
+        
+        function heunMethod(f, t0, y0, h, steps) {
+            const tValues = [t0];
+            const yValues = [y0];
+            
+            for (let i = 0; i < steps; i++) {
+                const t = tValues[i];
+                const y = yValues[i];
+                
+                // Paso predictor (Euler)
+                const k1 = f(t, y);
+                const yPred = y + h * k1;
+                
+                // Paso corrector (Heun)
+                const k2 = f(t + h, yPred);
+                const yNext = y + h * 0.5 * (k1 + k2);
+                
+                tValues.push(t + h);
+                yValues.push(yNext);
+            }
+            
+            return { tValues, yValues };
+        }
+        
+        function rungeKutta4(f, t0, y0, h, steps) {
+            const tValues = [t0];
+            const yValues = [y0];
+            
+            for (let i = 0; i < steps; i++) {
+                const t = tValues[i];
+                const y = yValues[i];
+                
+                const k1 = f(t, y);
+                const k2 = f(t + h/2, y + h/2 * k1);
+                const k3 = f(t + h/2, y + h/2 * k2);
+                const k4 = f(t + h, y + h * k3);
+                
+                const yNext = y + h/6 * (k1 + 2*k2 + 2*k3 + k4);
+                
+                tValues.push(t + h);
+                yValues.push(yNext);
+            }
+            
+            return { tValues, yValues };
+        }
+        
+        function showTable(containerId, tValues, yValues, method) {
+            const container = document.getElementById(containerId);
+            let html = '<table><tr><th>t</th><th>y(t)</th></tr>';
+            
+            const maxShow = 5;
+            for (let i = 0; i < Math.min(maxShow, tValues.length); i++) {
+                html += `<tr><td>${tValues[i].toFixed(2)}</td><td>${yValues[i].toFixed(6)}</td></tr>`;
+            }
+            
+            if (tValues.length > maxShow * 2) {
+                html += '<tr><td>...</td><td>...</td></tr>';
+            }
+            
+            for (let i = Math.max(tValues.length - maxShow, maxShow); i < tValues.length; i++) {
+                html += `<tr><td>${tValues[i].toFixed(2)}</td><td>${yValues[i].toFixed(6)}</td></tr>`;
+            }
+            
+            html += '</table>';
+            container.innerHTML = html;
+        }
+        
+        function drawChart(canvasId, tValues, yValues, label, color) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            // Destruir gráfico anterior si existe
+            if (canvasId === 'chartEuler' && chartEuler) {
+                chartEuler.destroy();
+            } else if (canvasId === 'chartHeun' && chartHeun) {
+                chartHeun.destroy();
+            } else if (canvasId === 'chartRK4' && chartRK4) {
+                chartRK4.destroy();
+            }
+            
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: tValues.map(t => t.toFixed(1)),
+                    datasets: [{
+                        label: label,
+                        data: yValues,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        tension: 0.1,
+                        pointRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tiempo (t)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'y(t)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Guardar referencia
+            if (canvasId === 'chartEuler') chartEuler = chart;
+            else if (canvasId === 'chartHeun') chartHeun = chart;
+            else if (canvasId === 'chartRK4') chartRK4 = chart;
+        }
+        
+        function drawComparisonChart(tValues, yValuesEuler, yValuesHeun, yValuesRK4) {
+            const ctx = document.getElementById('chartComparison').getContext('2d');
+            
+            if (chartComparison) {
+                chartComparison.destroy();
+            }
+            
+            chartComparison = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: tValues.map(t => t.toFixed(1)),
+                    datasets: [
+                        {
+                            label: 'Euler',
+                            data: yValuesEuler,
+                            borderColor: '#e74c3c',
+                            backgroundColor: '#e74c3c20',
+                            tension: 0.1,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Heun',
+                            data: yValuesHeun,
+                            borderColor: '#3498db',
+                            backgroundColor: '#3498db20',
+                            tension: 0.1,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'RK4',
+                            data: yValuesRK4,
+                            borderColor: '#2ecc71',
+                            backgroundColor: '#2ecc7120',
+                            tension: 0.1,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tiempo (t)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'y(t)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

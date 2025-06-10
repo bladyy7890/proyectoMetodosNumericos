@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../estilos/stilo.css">
+    <title>Comparación: Euler vs Heun vs RK4</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+</head>
+<body>
+    <div class="container">
+        <h1>Comparación: Euler vs Heun vs Runge-Kutta 4to</h1>
+        <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-family: Arial, sans-serif;">
+    <h2 style="color: #2c3e50; border-bottom: 2px solid #eaeaea; padding-bottom: 10px;">Modelado del Crecimiento Bacteriano</h2>
+    <p style="color: #34495e; line-height: 1.6;">El crecimiento de una población bacteriana puede modelarse mediante la <strong>ecuación logística</strong>, la cual establece que la tasa de cambio de la población (<em>dP/dt</em>) depende de la población actual (<em>P</em>) y de la capacidad máxima del ambiente (<em>K</em>). Matemáticamente, esto se expresa como:</p>
+    <p style="text-align: center; margin: 15px 0; font-size: 1.1em;">
+        <em>dP/dt = rP(1 - P/K)</em>
+    </p>
+    <p style="color: #34495e; line-height: 1.6;">
+    donde <em>r</em> es la tasa intrínseca de crecimiento y <em>K</em> es la capacidad de carga del ecosistema. Este modelo captura las fases típicas del crecimiento bacteriano: latencia, exponencial, estacionaria y declive. Al resolverla numéricamente (con métodos como Euler, Heun o Runge-Kutta), podemos predecir la dinámica poblacional en condiciones controladas, lo que es crucial en biotecnología, producción de antibióticos y tratamiento de aguas residuales.
+    </p>
+    <div style="background-color: #e8f4f8; padding: 10px; border-left: 4px solid #3498db; margin-top: 15px;">
+        <p style="color: #2c3e50; margin: 0; font-style: italic;">
+        <strong>Relación con métodos numéricos:</strong> La naturaleza no lineal de esta ecuación (similar a <em>dA/dt = αA[1 - (A/k)^v]</em> del modelo tumoral) hace esencial el uso de métodos numéricos cuando se requieren predicciones precisas con parámetros variables.
+        </p>
+    </div>
+</div>
+
+        <center><img src="../imagenes/cultivo-bacteriano.png" alt=""></center>
+
+        <div class="method-card heun">
+    <div class="method-btn">
+        <h2>Ejercicio de Cultivo Bacteriano</h2>
+        <p>
+            Un cultivo de <strong>E. coli</strong> comienza con una población inicial de <strong>100 bacterias</strong> en un medio de cultivo con capacidad máxima para <strong>10,000 organismos</strong>. Según el modelo logístico, la tasa de crecimiento depende de la población actual y los recursos disponibles.
+            <br><br>
+            Modela esta situación con la ecuación diferencial:
+            <span class="math">dP/dt = rP(1 - P/10,000)</span>,
+            donde <span class="math">P(t)</span> es la población bacteriana en el tiempo <span class="math">t</span> (horas), y <span class="math">r = 0.5</span> es la tasa de crecimiento intrínseco.
+            <br><br>
+            Usa los métodos numéricos (Euler, Heun y Runge-Kutta 4to orden) para estimar:
+            <ul>
+                <li>La población después de 12 horas</li>
+                <li>El momento en que la población alcanza 5,000 bacterias</li>
+            </ul>
+        </p>
+        <p><strong>Condición inicial:</strong> <span class="math">P(0) = 100</span></p>
+        <div style="background-color: #f0f4f8; padding: 10px; border-radius: 5px; margin-top: 10px;">
+            <strong>💡 Datos prácticos:</strong> Este modelo es esencial en biotecnología para determinar tiempos óptimos de cosecha en producción de antibióticos o proteínas recombinantes.
+        </div>
+    </div>
+</div>
+
+
+        <div class="form-group">
+            <label for="equation">Ecuación diferencial (dy/dt):</label>
+            <input type="text" id="equation" value="0.5*y*(1 - y/10000)">
+            <small>Usa 'y' para la variable dependiente y 't' para la independiente.</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="t0">Tiempo inicial (t0):</label>
+            <input type="number" id="t0" value="0" step="0.1">
+        </div>
+        
+        <div class="form-group">
+            <label for="y0">Valor inicial (y0):</label>
+            <input type="number" id="y0" value="100" step="0.1">
+        </div>
+        
+        <div class="form-group">
+            <label for="h">Paso (h):</label>
+            <input type="number" id="h" value="0.1" step="0.01" min="0.001">
+        </div>
+        
+        <div class="form-group">
+            <label for="steps">Número de pasos:</label>
+            <input type="number" id="steps" value="120" min="10">
+        </div>
+        
+        <button onclick="solve()">Comparar Métodos</button>
+        
+        <div class="results-container">
+            <div class="result-box">
+                <h3>Método de Euler</h3>
+                <p id="finalValueEuler"></p>
+                <div id="tableEuler"></div>
+            </div>
+            <div class="result-box">
+                <h3>Método de Heun</h3>
+                <p id="finalValueHeun"></p>
+                <div id="tableHeun"></div>
+            </div>
+            <div class="result-box">
+                <h3>Runge-Kutta 4to Orden</h3>
+                <p id="finalValueRK4"></p>
+                <div id="tableRK4"></div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-box">
+                <canvas id="chartEuler"></canvas>
+            </div>
+            <div class="chart-box">
+                <canvas id="chartHeun"></canvas>
+            </div>
+            <div class="chart-box">
+                <canvas id="chartRK4"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-box" style="margin-top: 20px;">
+            <canvas id="chartComparison"></canvas>
+        </div>
+
+<div id="conclusion" class="conclusion" style="display: none;">
+    <h3>Conclusión Comparativa</h3>
+    <p>
+        Para el problema de crecimiento bacteriano tras 12 horas, la población estimada fue:
+        <ul>
+            <li>Euler: 7916.33</li>
+            <li>Heun: 8027.24</li>
+            <li>Runge-Kutta 4º orden: 8029.57</li>
+        </ul>
+    </p>
+    <p>
+        Comparando con la solución exacta (<span class="math">8027</span>), el método de Euler fue el menos preciso, aunque cercano. El método de Heun ofreció una excelente aproximación, y Runge-Kutta de 4º orden fue el más preciso. A mayor complejidad del método, se obtiene mayor exactitud, aunque con un incremento en el costo computacional.
+    </p>
+</div>
+<center><a href="../index.html" class="btn-simple">← Volver</a></center>
+
+    <script>
+        let chartEuler = null;
+        let chartHeun = null;
+        let chartRK4 = null;
+        let chartComparison = null;
+
+        function solve() {
+            // Obtener valores de los inputs
+            const equation = document.getElementById('equation').value;
+            const t0 = parseFloat(document.getElementById('t0').value);
+            const y0 = parseFloat(document.getElementById('y0').value);
+            const h = parseFloat(document.getElementById('h').value);
+            const steps = parseInt(document.getElementById('steps').value);
+            
+            // Crear función dinámica
+            const f = new Function('t', 'y', 'return ' + equation + ';');
+            
+            // Resolver con los tres métodos
+            const { tValues: tValuesEuler, yValues: yValuesEuler } = eulerMethod(f, t0, y0, h, steps);
+            const { tValues: tValuesHeun, yValues: yValuesHeun } = heunMethod(f, t0, y0, h, steps);
+            const { tValues: tValuesRK4, yValues: yValuesRK4 } = rungeKutta4(f, t0, y0, h, steps);
+            
+            // Mostrar resultados finales
+            document.getElementById('finalValueEuler').innerHTML = `y(${tValuesEuler[tValuesEuler.length-1].toFixed(2)}) = ${yValuesEuler[yValuesEuler.length-1].toFixed(6)}`;
+            document.getElementById('finalValueHeun').innerHTML = `y(${tValuesHeun[tValuesHeun.length-1].toFixed(2)}) = ${yValuesHeun[yValuesHeun.length-1].toFixed(6)}`;
+            document.getElementById('finalValueRK4').innerHTML = `y(${tValuesRK4[tValuesRK4.length-1].toFixed(2)}) = ${yValuesRK4[yValuesRK4.length-1].toFixed(6)}`;
+            
+            // Mostrar tablas
+            showTable('tableEuler', tValuesEuler, yValuesEuler, 'Euler');
+            showTable('tableHeun', tValuesHeun, yValuesHeun, 'Heun');
+            showTable('tableRK4', tValuesRK4, yValuesRK4, 'RK4');
+            
+            // Dibujar gráficos individuales
+            drawChart('chartEuler', tValuesEuler, yValuesEuler, 'Método de Euler', '#e74c3c');
+            drawChart('chartHeun', tValuesHeun, yValuesHeun, 'Método de Heun', '#3498db');
+            drawChart('chartRK4', tValuesRK4, yValuesRK4, 'Runge-Kutta 4to Orden', '#2ecc71');
+            
+            // Dibujar gráfico comparativo
+            drawComparisonChart(tValuesEuler, yValuesEuler, yValuesHeun, yValuesRK4);
+            
+            // Mostrar conclusiones
+            document.getElementById('conclusion').style.display = 'block';
+        }
+        
+        function eulerMethod(f, t0, y0, h, steps) {
+            const tValues = [t0];
+            const yValues = [y0];
+            
+            for (let i = 0; i < steps; i++) {
+                const t = tValues[i];
+                const y = yValues[i];
+                const yNext = y + h * f(t, y);
+                
+                tValues.push(t + h);
+                yValues.push(yNext);
+            }
+            
+            return { tValues, yValues };
+        }
+        
+        function heunMethod(f, t0, y0, h, steps) {
+            const tValues = [t0];
+            const yValues = [y0];
+            
+            for (let i = 0; i < steps; i++) {
+                const t = tValues[i];
+                const y = yValues[i];
+                
+                // Paso predictor (Euler)
+                const k1 = f(t, y);
+                const yPred = y + h * k1;
+                
+                // Paso corrector (Heun)
+                const k2 = f(t + h, yPred);
+                const yNext = y + h * 0.5 * (k1 + k2);
+                
+                tValues.push(t + h);
+                yValues.push(yNext);
+            }
+            
+            return { tValues, yValues };
+        }
+        
+        function rungeKutta4(f, t0, y0, h, steps) {
+            const tValues = [t0];
+            const yValues = [y0];
+            
+            for (let i = 0; i < steps; i++) {
+                const t = tValues[i];
+                const y = yValues[i];
+                
+                const k1 = f(t, y);
+                const k2 = f(t + h/2, y + h/2 * k1);
+                const k3 = f(t + h/2, y + h/2 * k2);
+                const k4 = f(t + h, y + h * k3);
+                
+                const yNext = y + h/6 * (k1 + 2*k2 + 2*k3 + k4);
+                
+                tValues.push(t + h);
+                yValues.push(yNext);
+            }
+            
+            return { tValues, yValues };
+        }
+        
+        function showTable(containerId, tValues, yValues, method) {
+            const container = document.getElementById(containerId);
+            let html = '<table><tr><th>t</th><th>y(t)</th></tr>';
+            
+            const maxShow = 5;
+            for (let i = 0; i < Math.min(maxShow, tValues.length); i++) {
+                html += `<tr><td>${tValues[i].toFixed(2)}</td><td>${yValues[i].toFixed(6)}</td></tr>`;
+            }
+            
+            if (tValues.length > maxShow * 2) {
+                html += '<tr><td>...</td><td>...</td></tr>';
+            }
+            
+            for (let i = Math.max(tValues.length - maxShow, maxShow); i < tValues.length; i++) {
+                html += `<tr><td>${tValues[i].toFixed(2)}</td><td>${yValues[i].toFixed(6)}</td></tr>`;
+            }
+            
+            html += '</table>';
+            container.innerHTML = html;
+        }
+        
+        function drawChart(canvasId, tValues, yValues, label, color) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            // Destruir gráfico anterior si existe
+            if (canvasId === 'chartEuler' && chartEuler) {
+                chartEuler.destroy();
+            } else if (canvasId === 'chartHeun' && chartHeun) {
+                chartHeun.destroy();
+            } else if (canvasId === 'chartRK4' && chartRK4) {
+                chartRK4.destroy();
+            }
+            
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: tValues.map(t => t.toFixed(1)),
+                    datasets: [{
+                        label: label,
+                        data: yValues,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        tension: 0.1,
+                        pointRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tiempo (t)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'y(t)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Guardar referencia
+            if (canvasId === 'chartEuler') chartEuler = chart;
+            else if (canvasId === 'chartHeun') chartHeun = chart;
+            else if (canvasId === 'chartRK4') chartRK4 = chart;
+        }
+        
+        function drawComparisonChart(tValues, yValuesEuler, yValuesHeun, yValuesRK4) {
+            const ctx = document.getElementById('chartComparison').getContext('2d');
+            
+            if (chartComparison) {
+                chartComparison.destroy();
+            }
+            
+            chartComparison = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: tValues.map(t => t.toFixed(1)),
+                    datasets: [
+                        {
+                            label: 'Euler',
+                            data: yValuesEuler,
+                            borderColor: '#e74c3c',
+                            backgroundColor: '#e74c3c20',
+                            tension: 0.1,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Heun',
+                            data: yValuesHeun,
+                            borderColor: '#3498db',
+                            backgroundColor: '#3498db20',
+                            tension: 0.1,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'RK4',
+                            data: yValuesRK4,
+                            borderColor: '#2ecc71',
+                            backgroundColor: '#2ecc7120',
+                            tension: 0.1,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tiempo (t)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'y(t)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
